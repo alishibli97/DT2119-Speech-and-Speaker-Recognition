@@ -2,6 +2,7 @@ import numpy as np
 from lab1_proto import *
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture as GMM
+from scipy.cluster.hierarchy import dendrogram, linkage
 import warnings
 warnings.simplefilter("ignore")
 
@@ -123,14 +124,30 @@ if testing2:
             # plt.pcolormesh(posteriors)
             # plt.show()
     
-    X = mfcc(data[0]['samples'])
-    Y = mfcc(data[1]['samples'])
+    # X = mfcc(data[0]['samples'])
+    # Y = mfcc(data[1]['samples'])
 
-    local_distances = np.zeros(shape=(X.shape[0],Y.shape[0]))
-    for i,x in enumerate(X):
-        for j,y in enumerate(Y):
-            local_distances[i,j] = np.linalg.norm(x-y)
+    D = np.zeros(shape=(44,44))
 
-    d,LD,AD = dtw(X, Y, local_distances)
-    # print(local_distances.shape)
-    print(AD.shape)
+    for ii,data1 in enumerate(data):
+        print(f"Iteration {ii}")
+        for jj,data2 in enumerate(data):
+            
+            X = mfcc(data1['samples'])
+            Y = mfcc(data2['samples'])
+
+            local_distances = np.zeros(shape=(X.shape[0],Y.shape[0]))
+            for i,x in enumerate(X):
+                for j,y in enumerate(Y):
+                    local_distances[i,j] = np.linalg.norm(x-y)
+            
+            d,LD,AD = dtw(X, Y, local_distances)
+            D[ii,jj]=d
+    
+
+    # plt.pcolormesh(D)
+    # plt.show()
+
+    Z = linkage(D,method='complete')
+    dn = dendrogram(Z,labels=tidigit2labels(data))
+    plt.show()
