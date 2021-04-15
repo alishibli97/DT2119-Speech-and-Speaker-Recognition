@@ -163,19 +163,11 @@ def dtw(x, y, dist):
     Note that you only need to define the first output for this exercise.
     """
 
-    LD = dist(x,y)
-    AD = float('inf') * np.ones(LD.shape)
-    AD[0,0] = LD[0,0]
-    for i in range(1, AD.shape[1]):
-        AD[0,i] = AD[0, i - 1] + LD[0, i] #row1
-
-    for i in range(1, AD.shape[0]):
-        AD[i,0] = AD[i - 1, 0] + LD[i,0] #col1
+    AD = np.zeros(dist.shape)
+    for i in range(len(x)):
+        for j in range(len(y)):
+            AD[i,j] = dist[i,j] + min(AD[i - 1, j], AD[i, j - 1], AD[i - 1, j - 1])
     
-    for i in range(1, AD.shape[0]):
-        for j in range(1, AD.shape[1]):
-            AD[i,j] = LD[i,j] + min(AD[i - 1, j], AD[i, j - 1], AD[i - 1, j - 1])
     d = AD[-1, -1]/(x.shape[0] + y.shape[0])
 
-    return d, LS, AD
-    
+    return d, dist, AD

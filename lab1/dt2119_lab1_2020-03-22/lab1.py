@@ -131,4 +131,6 @@ if testing2:
         for j,y in enumerate(Y):
             local_distances[i,j] = np.linalg.norm(x-y)
 
-    dtw(X, Y, local_distances)
+    d,LD,AD = dtw(X, Y, local_distances)
+    # print(local_distances.shape)
+    print(AD.shape)
