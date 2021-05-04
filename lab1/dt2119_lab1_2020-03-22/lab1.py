@@ -104,50 +104,63 @@ if testing2:
     for i in range(1,len(data)):
         np.append(result_mfcc,mfcc(data[i]['samples']))
         np.append(result_mel,mspec(data[i]['samples']))
-    
+
     corr_matrix_mfcc = np.corrcoef(result_mfcc)
     corr_matrix_mel = np.corrcoef(result_mel)
 
-    # plot_meshes(corr_matrix_mfcc,corr_matrix_mel)
+    plot_meshes(corr_matrix_mfcc,corr_matrix_mel)
 
-    num_components = [4,8,16,32]
-    for num_comp in num_components:
-        gmm = GMM(n_components=num_comp,random_state=0).fit(result_mfcc)
-
-        if(num_comp==32):
-            X = np.array(mfcc(data[16]['samples']))
-            for i in [17,38,39]:
-                X = np.append(X, mfcc(data[i]['samples']),axis=0)
-            
-            posteriors = gmm.predict_proba(X)
-
-            # plt.pcolormesh(posteriors)
-            # plt.show()
+    # # Compute 5 : MFCC for all tidigits and concanate them
+    # tidiMfcc = mfcc(data[0]['samples']) 
+    # for i in range(1, len(data)):
+    #    np.append(tidiMfcc, mfcc(data[i]['samples']), axis=0)
+    # corMfcc = np.corrcoef(tidiMfcc.transpose())
     
-    # X = mfcc(data[0]['samples'])
-    # Y = mfcc(data[1]['samples'])
+    # tidiMspec = mspec(data[0]['samples']) 
+    # for i in range(1, len(data)):
+    #    np.append(tidiMspec, mspec(data[i]['samples']), axis=0 )
+    # corMspec = np.corrcoef(tidiMspec.transpose())
 
-    D = np.zeros(shape=(44,44))
+    # plot_meshes(tidiMfcc,tidiMspec)
 
-    for ii,data1 in enumerate(data):
-        print(f"Iteration {ii}")
-        for jj,data2 in enumerate(data):
+    # num_components = [4,8,16,32]
+    # for num_comp in num_components:
+    #     gmm = GMM(n_components=num_comp,random_state=0).fit(result_mfcc)
+
+    #     if(num_comp==32):
+    #         X = np.array(mfcc(data[16]['samples']))
+    #         for i in [17,38,39]:
+    #             X = np.append(X, mfcc(data[i]['samples']),axis=0)
             
-            X = mfcc(data1['samples'])
-            Y = mfcc(data2['samples'])
+    #         posteriors = gmm.predict_proba(X)
 
-            local_distances = np.zeros(shape=(X.shape[0],Y.shape[0]))
-            for i,x in enumerate(X):
-                for j,y in enumerate(Y):
-                    local_distances[i,j] = np.linalg.norm(x-y)
+    #         # plt.pcolormesh(posteriors)
+    #         # plt.show()
+    
+    # # X = mfcc(data[0]['samples'])
+    # # Y = mfcc(data[1]['samples'])
+
+    # D = np.zeros(shape=(44,44))
+
+    # for ii,data1 in enumerate(data):
+    #     print(f"Iteration {ii}")
+    #     for jj,data2 in enumerate(data):
             
-            d,LD,AD = dtw(X, Y, local_distances)
-            D[ii,jj]=d
+    #         X = mfcc(data1['samples'])
+    #         Y = mfcc(data2['samples'])
+
+    #         local_distances = np.zeros(shape=(X.shape[0],Y.shape[0]))
+    #         for i,x in enumerate(X):
+    #             for j,y in enumerate(Y):
+    #                 local_distances[i,j] = np.linalg.norm(x-y)
+            
+    #         d,LD,AD = dtw(X, Y, local_distances)
+    #         D[ii,jj]=d
     
 
-    # plt.pcolormesh(D)
+    # # plt.pcolormesh(D)
+    # # plt.show()
+
+    # Z = linkage(D,method='complete')
+    # dn = dendrogram(Z,labels=tidigit2labels(data))
     # plt.show()
-
-    Z = linkage(D,method='complete')
-    dn = dendrogram(Z,labels=tidigit2labels(data))
-    plt.show()
