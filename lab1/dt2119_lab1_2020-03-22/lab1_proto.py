@@ -82,7 +82,6 @@ def preemp(input, p=0.97):
         output: array of pre-emphasised speech samples
     Note (you can use the function lfilter from scipy.signal)
     """
-    # preem_wav = signal.lfilter([1, -coeff], [1], wav)
     return lfilter([1, -p], [1], input)
 
 def windowing(input):

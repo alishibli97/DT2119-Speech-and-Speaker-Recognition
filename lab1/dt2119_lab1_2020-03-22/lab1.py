@@ -6,8 +6,8 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 import warnings
 warnings.simplefilter("ignore")
 
-example = np.load('lab1_example.npz', allow_pickle=True)['example'].item()
-data = np.load('lab1_data.npz', allow_pickle=True)['data']
+example = np.load('/Users/nandakishorprabhu/Documents/Studies/DT2119/Code/DT2119-Speech-and-Speaker-Recognition/lab1/dt2119_lab1_2020-03-22/lab1_example.npz', allow_pickle=True)['example'].item()
+data = np.load('/Users/nandakishorprabhu/Documents/Studies/DT2119/Code/DT2119-Speech-and-Speaker-Recognition/lab1/dt2119_lab1_2020-03-22/lab1_data.npz', allow_pickle=True)['data']
 
 testing1 = False
 testing2 = True
@@ -83,9 +83,13 @@ def plot_posteriors(posteriors):
 if testing1:
     # speech = example
     speech = data[0]
+    # print(speech)
 
     winlen = int(speech['samplingrate'] * 20e-3)
     winshift = int(speech['samplingrate'] * 10e-3)
+
+    print(winlen)
+    print(winshift)
 
     sample_enframe = enframe(speech['samples'], winlen=winlen, winshift=winshift)
     sample_preemp = preemp(sample_enframe)
@@ -94,7 +98,8 @@ if testing1:
     sample_mel = logMelSpectrum(sample_fft,speech['samplingrate'])
     sample_dct = cepstrum(sample_mel,13)
     sample_dct = lifter(sample_dct)
-    plot(sample_dct)
+    # plt.pcolormesh(sample_dct.T)
+    # plt.show()
 
 if testing2:
     # plot_data()
@@ -109,6 +114,7 @@ if testing2:
     corr_matrix_mel = np.corrcoef(result_mel)
 
     plot_meshes(corr_matrix_mfcc,corr_matrix_mel)
+<<<<<<< HEAD
 
     # # Compute 5 : MFCC for all tidigits and concanate them
     # tidiMfcc = mfcc(data[0]['samples']) 
@@ -122,11 +128,14 @@ if testing2:
     # corMspec = np.corrcoef(tidiMspec.transpose())
 
     # plot_meshes(tidiMfcc,tidiMspec)
+=======
+>>>>>>> bd49194531dd15a431cc3e59480fb87eaf60a307
 
     # num_components = [4,8,16,32]
     # for num_comp in num_components:
     #     gmm = GMM(n_components=num_comp,random_state=0).fit(result_mfcc)
 
+<<<<<<< HEAD
     #     if(num_comp==32):
     #         X = np.array(mfcc(data[16]['samples']))
     #         for i in [17,38,39]:
@@ -136,6 +145,17 @@ if testing2:
 
     #         # plt.pcolormesh(posteriors)
     #         # plt.show()
+=======
+        # if(num_comp==32):
+        X = np.array(mfcc(data[16]['samples']))
+        for i in [17,38,39]:
+            X = np.append(X, mfcc(data[i]['samples']),axis=0)
+            
+            posteriors = gmm.predict_proba(X)
+            plt.pcolormesh(posteriors)
+            plt.show()
+
+>>>>>>> bd49194531dd15a431cc3e59480fb87eaf60a307
     
     # # X = mfcc(data[0]['samples'])
     # # Y = mfcc(data[1]['samples'])
@@ -161,6 +181,10 @@ if testing2:
     # # plt.pcolormesh(D)
     # # plt.show()
 
+<<<<<<< HEAD
     # Z = linkage(D,method='complete')
+=======
+    Z = linkage(D,method='complete')
+>>>>>>> bd49194531dd15a431cc3e59480fb87eaf60a307
     # dn = dendrogram(Z,labels=tidigit2labels(data))
     # plt.show()
