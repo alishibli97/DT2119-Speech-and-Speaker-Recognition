@@ -3,6 +3,7 @@ from lab2_proto import *
 
 
 data = np.load('lab2_data.npz', allow_pickle=True)['data']
+example = np.load('lab2_example.npz', allow_pickle=True)['example'].item()
 phoneHMMs = np.load('lab2_models_all.npz', allow_pickle=True)['phoneHMMs'].item()
 
 # print(phoneHMMs)
@@ -10,7 +11,6 @@ phoneHMMs = np.load('lab2_models_all.npz', allow_pickle=True)['phoneHMMs'].item(
 
 # print(phoneHMMs['ah']['covars'].shape)   
 
-isolated = {}
 prondict = {} 
 prondict['o'] = ['ow']
 prondict['z'] = ['z', 'iy', 'r', 'ow']
@@ -24,7 +24,9 @@ prondict['7'] = ['s', 'eh', 'v', 'ah', 'n']
 prondict['8'] = ['ey', 't']
 prondict['9'] = ['n', 'ay', 'n']
 
+
 ##Concatenating the phonemes with silence in the begining and end
+isolated = {}
 for digit in prondict.keys():
     isolated[digit] = ['sil'] + prondict[digit] + ['sil']
 
@@ -32,7 +34,15 @@ for digit in prondict.keys():
 
 wordHMMs = {}
 wordHMMs['o'] = concatHMMs(phoneHMMs, isolated['o'])
+# print("concatenated")
 # print(wordHMMs['o'])
+
+X = example['lmfcc']
+means = wordHMMs['o']['means']
+vars = wordHMMs['o']['covars']
+practical = log_multivariate_normal_density_diag(X, means, vars)
+theoretical = example['obsloglik']
+# print(theoretical ==  practical)
 
 best_model = {}
 accuracy = 0

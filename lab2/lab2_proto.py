@@ -37,7 +37,9 @@ def concatTwoHMMs(hmm1, hmm2):
         else:
             start_prob[i] = hmm1['startprob'][-1] * hmm2['startprob'][i - (hmm1['startprob'].shape[0] - 1)]
     
-    transition_matrix = np.zeros((hmm1['transmat'].shape[0], hmm2['transmat'].shape[0]))
+    shape1 = hmm1['transmat'].shape[0]
+    shape2 = hmm2['transmat'].shape[0]
+    transition_matrix = np.zeros((shape1 + shape2 - 1, shape1 + shape2 - 1))
     for i in range(transition_matrix.shape[0] - 1):
         for j in range(transition_matrix.shape[1]):
             if i < hmm1['transmat'].shape[0] - 1 and j < hmm1['transmat'].shape[1] - 1:
