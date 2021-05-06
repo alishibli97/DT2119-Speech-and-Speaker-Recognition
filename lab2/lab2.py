@@ -14,41 +14,93 @@ def _verification(criteria,example,wordHMMs):
 
         # print(np.allclose(theor, example["obsloglik"]))
         plot_fig = True
-        if plot_fig:
+        if plot_fig:            
             plt.rcParams['figure.figsize'] = [15, 3]
+            
             plt.subplot(121).set_title("Observation Likelihood")
             plt.pcolormesh(theor.T)
+            plt.subplot(122).set_title("Example")
+            plt.pcolormesh(example["obsloglik"].T)
+
             plt.colorbar()
             plt.yticks(range(1,10), verticalalignment='top')
             plt.xlabel('Frames')
             plt.ylabel('States')
-            plt.subplot(122).set_title("Example")
-            plt.pcolormesh(example["obsloglik"].T)
+            
             plt.show()
 
-    elif criteria=="forward": # need to plot the forward and example verification
-        obsloglik = log_multivariate_normal_density_diag(example['obsloglik'], wordHMMs[0]['means'], wordHMMs[0]['covars'])
-        prac = forward(obsloglik, np.log(wordHMMs[0]['startprob'][:-1]),np.log(wordHMMs[0]['transmat'][:-1,:-1]))
-        theor = example['logalpha']
+    elif criteria=="forward":
+        obsloglik = log_multivariate_normal_density_diag(example['lmfcc'], wordHMMs[0]['means'], wordHMMs[0]['covars'])
+        log_startprob = np.log(wordHMMs[0]['startprob'][:-1])
+        log_transmat = np.log(wordHMMs[0]['transmat'][:-1,:-1])
+        alpha = forward(obsloglik, log_startprob, log_transmat)
 
+        # print(np.allclose(theor, example["obsloglik"]))
         plot_fig = True
         if plot_fig:
             plt.rcParams['figure.figsize'] = [15, 3]
-            plt.subplot(121).set_title("Observation Likelihood")
-            plt.pcolormesh(theor.T)
+            
+            plt.subplot(121).set_title("Alpha")
+            plt.pcolormesh(alpha.T)
+            plt.subplot(122).set_title("Example")
+            plt.pcolormesh(example["logalpha"].T)
+            
+            plt.colorbar()
+            plt.yticks(range(1,10), verticalalignment='top')
+            plt.xlabel('Frames in sample')
+            plt.ylabel('sil-o-sil (9 states)')
+            
+            plt.show()
+
+    elif criteria=="viterbi":
+        
+        obsloglik = log_multivariate_normal_density_diag(example['lmfcc'], wordHMMs[0]['means'], wordHMMs[0]['covars'])  
+        log_startprob = np.log(wordHMMs[0]['startprob'][:-1])
+        log_transmat = np.log(wordHMMs[0]['transmat'][:-1,:-1])
+        alpha = forward(obsloglik, log_startprob, log_transmat) 
+        vloglik, vpath = viterbi(obsloglik, log_startprob, log_transmat)
+        print(vloglik)
+        print(example['vloglik'])
+
+        plot_fig = True
+        if plot_fig:
+            plt.figure(figsize=(15,3))
+            
+            plt.pcolormesh(np.ma.masked_array(alpha.T))
+            plt.plot(vpath+0.5, linewidth = 2)
+            
             plt.colorbar()
             plt.yticks(range(1,10), verticalalignment='top')
             plt.xlabel('Frames')
             plt.ylabel('States')
-            plt.subplot(122).set_title("Example")
-            plt.pcolormesh(example["obsloglik"].T)
+            plt.title("Alpha")
             plt.show()
 
-    elif criteria=="viterbi":
-        print("k")
+            print(vpath+1)
 
     elif criteria=="backward":
-        print("k")
+        
+        obsloglik = log_multivariate_normal_density_diag(example['lmfcc'], wordHMMs[0]['means'], wordHMMs[0]['covars'])  
+        log_startprob = np.log(wordHMMs[0]['startprob'][:-1])
+        log_transmat = np.log(wordHMMs[0]['transmat'][:-1,:-1])
+        beta = backward(obsloglik, log_startprob, log_transmat)
+        
+        # print(np.allclose(theor, example["obsloglik"]))
+        plot_fig = True
+        if plot_fig:
+            plt.rcParams['figure.figsize'] = [15, 3]
+
+            plt.subplot(121).set_title("Log Beta")
+            plt.pcolormesh(beta.T)
+            plt.subplot(122).set_title("Example")
+            plt.pcolormesh(example['logbeta'].T)
+            
+            plt.colorbar()
+            plt.yticks(range(1,10), verticalalignment='top')
+            plt.xlabel('Frames')
+            plt.ylabel('States')
+            
+            plt.show()
 
 def _forward(prondict,wordHMMs):
     correct = 0
@@ -112,8 +164,8 @@ if __name__=="__main__":
     phoneOneSpeaker = np.load('lab2_models_onespkr.npz', allow_pickle=True)['phoneHMMs'].item()
 
     # discard sp model
-    del phoneHMMs['sp']
-    del phoneOneSpeaker['sp']
+    # del phoneHMMs['sp']
+    # del phoneOneSpeaker['sp']
 
     prondict = {} 
     prondict['o'] = ['ow']
@@ -136,10 +188,12 @@ if __name__=="__main__":
         wordHMMsOne.append(concatHMMs(phoneHMMs,prondict[key]))
 
     # _concatination(example,wordHMMs)
+    # _verification("concatenation", example, wordHMMs)
     # _verification("forward", example, wordHMMs)
+    _verification("viterbi", example, wordHMMs)
+    # _verification("backward", example, wordHMMs)
+    
     # _forward(prondict,wordHMMsOne)
     
-
-    _viterbi(prondict,wordHMMs)
-    print('The CPU usage is: ', psutil.cpu_percent(4))
-
+    # _viterbi(prondict,wordHMMs)
+    # print('The CPU usage is: ', psutil.cpu_percent(4))
