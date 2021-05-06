@@ -1,8 +1,10 @@
 import numpy as np
 from lab2_proto import *
 from matplotlib import pyplot as plt
+import warnings
 # import psutil
 
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 def _verification(criteria,example,wordHMMs):
     if criteria=="concatenation":
         X = example['lmfcc']
@@ -165,39 +167,30 @@ def _backward():
     plt.show()
 
 def _retrain(wordHMMs, data):
-    best_loglik = None
-    best_model = None
 
-    for digit in range(len(wordHMMs)):
-        means = wordHMMs[digit]['means']
-        vars = wordHMMs[digit]['covars']
-        obs_log_lik = log_multivariate_normal_density_diag(data[10]['lmfcc'], means, vars)
-        viterb_loglik = 0
+    liklihoods = []
+    prev_loglik = None
+    threshold = 1.0
+    for i in range(20):
+        obsloglik = log_multivariate_normal_density_diag(data[10]['lmfcc'], wordHMMs[5]['means'], wordHMMs[5]['covars'])  
 
-        print(obs_log_lik.shape)
-        print(wordHMMs[digit]['startprob'].shape)
-        print(wordHMMs[digit]['transmat'].shape)
+        log_startprob = np.log(wordHMMs[5]['startprob'][:-1])
+        log_transmat = np.log(wordHMMs[5]['transmat'][:-1,:-1])
 
-        new_log_lik = viterbi(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
-        print(new_log_lik)
-        iter = 0
-        while iter < 20 and abs(new_log_lik - viterb_loglik) > 1.0:
-            viterb_loglik = new_log_lik
-            forward_prob = forward(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
-            back_prob = backward(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
-            log_gamma = statePosteriors(forward_prob, back_prob)
-            means,covars = updateMeanAndVar(data[10]['lmfcc'], log_gamma)
+        alpha = forward(obsloglik, log_startprob, log_transmat) 
+        beta = backward(obsloglik, log_startprob, log_transmat)
+        gamma = statePosteriors(alpha, beta)
+        hmm_loglik = logsumexp(alpha[-1]) 
+        if(prev_loglik is None):
+            prev_loglik = hmm_loglik
+        elif(hmm_loglik - prev_loglik > threshold):
+            prev_loglik = hmm_loglik
+        else:
+            continue
 
-            obs_log_lik = log_multivariate_normal_density_diag(data[10]['lmfcc'], means, covars)
-            new_log_lik = viterbi(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
-            iter+=1
-        
-        print("Log-likelihood:" + str(new_log_lik) + "Iterations until convergence = " + str(iter))
-
-        if best_loglik is None or new_log_lik > best_loglik:
-            best_loglik = new_log_lik
-            best_model = digit
-    print("Best log likelihood is : " + best_loglik + " and Model is:" + str(best_model))
+        wordHMMs[5]['means'], wordHMMs[5]['covars'] = updateMeanAndVar(data[10]['lmfcc'], gamma)
+        liklihoods.append(hmm_loglik)
+        print(liklihoods)
 
 if __name__=="__main__":
     data = np.load('lab2_data.npz', allow_pickle=True)['data']
