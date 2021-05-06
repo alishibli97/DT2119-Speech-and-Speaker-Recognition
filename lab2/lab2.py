@@ -73,7 +73,7 @@ def _verification(criteria,example,wordHMMs):
             plt.yticks(range(1,10), verticalalignment='top')
             plt.xlabel('Frames')
             plt.ylabel('States')
-            plt.title("Alpha")
+            plt.title("Viterbi")
             plt.show()
 
             print(vpath+1)
@@ -101,6 +101,16 @@ def _verification(criteria,example,wordHMMs):
             plt.ylabel('States')
             
             plt.show()
+
+    elif criteria=="posterior":
+
+        obsloglik = log_multivariate_normal_density_diag(example['lmfcc'], wordHMMs[0]['means'], wordHMMs[0]['covars'])
+        log_startprob = np.log(wordHMMs[0]['startprob'][:-1])
+        log_transmat = np.log(wordHMMs[0]['transmat'][:-1,:-1])
+        alpha = forward(obsloglik, log_startprob, log_transmat)
+        beta = backward(obsloglik, log_startprob, log_transmat)
+        gamma = statePosteriors(alpha, beta)
+        print(np.sum(np.exp(gamma), axis = 1))
 
 def _forward(prondict,wordHMMs):
     correct = 0
@@ -187,11 +197,11 @@ if __name__=="__main__":
         wordHMMs.append(concatHMMs(phoneHMMs,prondict[key]))
         wordHMMsOne.append(concatHMMs(phoneHMMs,prondict[key]))
 
-    # _concatination(example,wordHMMs)
     # _verification("concatenation", example, wordHMMs)
     # _verification("forward", example, wordHMMs)
-    _verification("viterbi", example, wordHMMs)
+    # _verification("viterbi", example, wordHMMs)
     # _verification("backward", example, wordHMMs)
+    _verification("posterior", example, wordHMMs)
     
     # _forward(prondict,wordHMMsOne)
     
