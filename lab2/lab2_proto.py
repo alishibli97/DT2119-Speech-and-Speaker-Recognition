@@ -228,4 +228,8 @@ def updateMeanAndVar(X, log_gamma, varianceFloor=5.0):
         means[i] = np.sum(gamma[:,i].reshape(-1, 1) * X, axis = 0) / gamma_sum
         covars[i] = np.sum(gamma[:,i].reshape(-1, 1) * (X - means[i])**2, axis = 0) / gamma_sum
         covars[i, covars[i] < varianceFloor] = varianceFloor
+<<<<<<< HEAD
     return (means, covars)
+=======
+    return (means, covars)
+>>>>>>> 220e090c819dcb56e9a0f014e8494659972a2e1b
