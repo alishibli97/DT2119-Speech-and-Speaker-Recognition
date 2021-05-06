@@ -1,7 +1,8 @@
 import numpy as np
 from lab2_proto import *
 from matplotlib import pyplot as plt
-# import psutil
+import psutil
+from tqdm import tqdm
 
 def _verification(criteria,example,wordHMMs):
     if criteria=="concatenation":
