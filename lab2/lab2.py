@@ -1,7 +1,7 @@
 import numpy as np
 from lab2_proto import *
 from matplotlib import pyplot as plt
-import psutil
+# import psutil
 
 def _verification(criteria,example,wordHMMs):
     if criteria=="concatenation":
@@ -164,8 +164,40 @@ def _backward():
     _ = plt.ylabel('sil-o-sil (9 states)')
     plt.show()
 
-def _retrain():
-    print("k")
+def _retrain(wordHMMs, data):
+    best_loglik = None
+    best_model = None
+
+    for digit in range(len(wordHMMs)):
+        means = wordHMMs[digit]['means']
+        vars = wordHMMs[digit]['covars']
+        obs_log_lik = log_multivariate_normal_density_diag(data[10]['lmfcc'], means, vars)
+        viterb_loglik = 0
+
+        print(obs_log_lik.shape)
+        print(wordHMMs[digit]['startprob'].shape)
+        print(wordHMMs[digit]['transmat'].shape)
+
+        new_log_lik = viterbi(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
+        print(new_log_lik)
+        iter = 0
+        while iter < 20 and abs(new_log_lik - viterb_loglik) > 1.0:
+            viterb_loglik = new_log_lik
+            forward_prob = forward(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
+            back_prob = backward(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
+            log_gamma = statePosteriors(forward_prob, back_prob)
+            means,covars = updateMeanAndVar(data[10]['lmfcc'], log_gamma)
+
+            obs_log_lik = log_multivariate_normal_density_diag(data[10]['lmfcc'], means, covars)
+            new_log_lik = viterbi(obs_log_lik, np.log(wordHMMs[digit]['startprob']), np.log(wordHMMs[digit]['transmat']))
+            iter+=1
+        
+        print("Log-likelihood:" + str(new_log_lik) + "Iterations until convergence = " + str(iter))
+
+        if best_loglik is None or new_log_lik > best_loglik:
+            best_loglik = new_log_lik
+            best_model = digit
+    print("Best log likelihood is : " + best_loglik + " and Model is:" + str(best_model))
 
 if __name__=="__main__":
     data = np.load('lab2_data.npz', allow_pickle=True)['data']
@@ -201,9 +233,10 @@ if __name__=="__main__":
     # _verification("forward", example, wordHMMs)
     # _verification("viterbi", example, wordHMMs)
     # _verification("backward", example, wordHMMs)
-    _verification("posterior", example, wordHMMs)
+    # _verification("posterior", example, wordHMMs)
     
     # _forward(prondict,wordHMMsOne)
     
+    _retrain(wordHMMs, data)
     # _viterbi(prondict,wordHMMs)
     # print('The CPU usage is: ', psutil.cpu_percent(4))
