@@ -29,36 +29,6 @@ def concatTwoHMMs(hmm1, hmm2):
 
     See also: the concatenating_hmms.pdf document in the lab package
     """
-    # concatHMM = {}
-    # start_prob = np.zeros(hmm1['startprob'].shape[0] + hmm2['startprob'].shape[0] - 1)
-    # for i in range(start_prob.shape[0]):
-    #     if i < hmm1['startprob'].shape[0] - 1:
-    #         start_prob[i] = hmm1['startprob'][i]
-    #     else:
-    #         start_prob[i] = hmm1['startprob'][-1] * hmm2['startprob'][i - (hmm1['startprob'].shape[0] - 1)]
-    
-    # shape1 = hmm1['transmat'].shape
-    # shape2 = hmm2['transmat'].shape
-    # transition_matrix = np.zeros((shape1[0] + shape2[0] - 1, shape1[1] + shape2[1] - 1))
-    # for i in range(transition_matrix.shape[0] - 1):
-    #     for j in range(transition_matrix.shape[1]):
-    #         if i < shape1[0] and j < shape1[1]:
-    #             transition_matrix[i,j] = hmm1['transmat'][i,j]
-    #         elif i < shape1[0] and j >= shape1[1]:
-    #             transition_matrix[i,j] =  hmm1['transmat'][i, -1] * hmm2['startprob'][j - (hmm1['transmat'].shape[1] - 1)]
-    #         elif i>=shape1[0] and j >= shape1[1]:
-    #             transition_matrix[i, j] = hmm2['transmat'][i - (hmm1['transmat'].shape[0] - 1), j - (hmm1['transmat'].shape[1] - 1)]
-   
-    # transition_matrix[-1, -1] = 1
-    # means = np.vstack((hmm1['means'], hmm2['means']))
-    # covars = np.vstack((hmm1['covars'], hmm2['covars']))
-
-    # concatHMM['startprob'] = start_prob
-    # concatHMM['transmat'] = transition_matrix
-    # concatHMM['means'] = means
-    # concatHMM['covars'] = covars
-
-    # return concatHMM
     
     concatedHMM = {}
     #M is the number of emitting states in each HMM model (could be different for each)
@@ -174,12 +144,7 @@ def backward(log_emlik, log_startprob, log_transmat):
     Output:
         backward_prob: NxM array of backward log probabilities for each of the M states in the model
     """
-    # backward_prob = np.zeros(log_emlik.shape)
-    # for i in reversed(range(backward_prob.shape[0] - 1)):
-    #     for j in range(backward_prob.shape[1]):
-    #         backward_prob[i,j] = logsumexp(log_transmat[j,:-1] + log_emlik[i + 1,:] + backward_prob[i + 1,:])
-    # return backward_prob
-    log_b = np.zeros(log_emlik.shape)# + 1.0 / log_emlik.shape[1]
+    log_b = np.zeros(log_emlik.shape)
     for n in reversed(range(log_emlik.shape[0] - 1)):
         for i in range(log_emlik.shape[1]):
             log_b[n, i] = logsumexp(log_transmat[i,:] + log_emlik[n + 1, :] + log_b[n + 1,:])
@@ -199,22 +164,7 @@ def viterbi(log_emlik, log_startprob, log_transmat, forceFinalState=True):
         viterbi_loglik: log likelihood of the best path
         viterbi_path: best path
     """
-    # viterbi_loglik = np.zeros(log_emlik.shape)
-    # viterbi_b_matrix  = np.zeros(log_emlik.shape, dtype=int)
 
-    # viterbi_loglik[0] = log_startprob[:-1] + log_emlik[0]
-
-    # for i in range(1, viterbi_loglik.shape[0] - 1):
-    #     for j in range(viterbi_loglik.shape[1]):
-    #         viterbi_loglik[i,j] = np.max(viterbi_loglik[i-1,:] + log_transmat[:-1, j]) + log_emlik[i,j]
-    #         viterbi_b_matrix[i,j] = np.argmax(viterbi_loglik[i - 1,:] + log_transmat[:-1,j])
-
-    # viterbi_path = [np.argmax(viterbi_b_matrix[-1])]
-    # for i in reversed(range(viterbi_b_matrix[0] - 1)):
-    #     viterbi_path.append(viterbi_b_matrix[i, viterbi_path[-1]])
-    # viterbi_path.reverse()
-
-    # return np.max(viterbi_loglik[-1], np.array(viterbi_path))
     B = np.zeros(log_emlik.shape, dtype = int)
     V = np.zeros(log_emlik.shape)
     V[0] = log_startprob.flatten() + log_emlik[0]
@@ -223,9 +173,6 @@ def viterbi(log_emlik, log_startprob, log_transmat, forceFinalState=True):
         for j in range(log_emlik.shape[1]):
             V[n][j] = np.max(V[n - 1,:] + log_transmat[:,j]) + log_emlik[n, j]
             B[n][j] = np.argmax(V[n - 1,:] + log_transmat[:,j])
-
-    # Backtrack to take viteri path
-    # viterbi_path = viterbiBacktrack(B, np.argmax(V[ log_emlik.shape[0] - 1]))
 
     lastIdx = np.argmax(V[log_emlik.shape[0] - 1])
 
@@ -249,8 +196,6 @@ def statePosteriors(log_alpha, log_beta):
     Output:
         log_gamma: NxM array of gamma probabilities for each of the M states in the model
     """
-    # log_gamma = log_alpha + log_beta - logsumexp(log_alpha[log_alpha.shape[0] - 1])
-    # return log_gamma
 
     N = len(log_alpha)
     log_gamma = log_alpha + log_beta - logsumexp(log_alpha[N - 1])
