@@ -131,7 +131,9 @@ def _verification(criteria,example,wordHMMs):
         print(hmm_gmm_ret_labels)
 
 def _forward(prondict,wordHMMs):
+    print("Testing forward algorithm:")
     correct = 0
+    count = 0
     for key in prondict.keys():
         sequences = [x['lmfcc'] for x in data if x['digit']==key]
         for sequence in sequences:
@@ -146,11 +148,14 @@ def _forward(prondict,wordHMMs):
                     index = i
             pred = list(prondict.keys())[index] # predicted letter
             if key==pred: correct+=1
+            count+=1
             print(f"For {key} predicted: {pred}")
-    print(f"Total accuracy: {correct*100/len(prondict)}%")
+    print(f"Total correct: {correct} out of {count}\n Percentage correct: {correct*100/count}%")
 
 def _viterbi(prondict,wordHMMs):
+    print("Testing viterbi algorithm:")
     correct = 0
+    count = 0
     for key in prondict.keys():
         sequences = [x['lmfcc'] for x in data if x['digit']==key]
         for sequence in sequences:
@@ -164,8 +169,9 @@ def _viterbi(prondict,wordHMMs):
                     maxProb = viterbi_loglik
             pred = list(prondict.keys())[index] # predicted letter
             if key==pred: correct+=1
-        print(f"For {key} predicted: {pred}")
-    print(f"Total accuracy: {correct}")
+            count+=1
+            print(f"For {key} predicted: {pred}")
+    print(f"Total correct: {correct} out of {count}\n Percentage correct: {correct*100/count}%")
 
 def _backward():
     obsloglik = log_multivariate_normal_density_diag(example['lmfcc'], wordHMMs[0]['means'], wordHMMs[0]['covars'])
@@ -245,12 +251,14 @@ if __name__=="__main__":
     # _verification("posterior", example, wordHMMs)
     # _verification("gmm", example, wordHMMs)
     
-    # _forward(prondict,wordHMMsOne)
-    # print('The CPU usage is: ', psutil.cpu_percent(4))
+    _forward(prondict,wordHMMsOne)
+    print('The CPU usage is: ', psutil.cpu_percent(4))
 
-    # _viterbi(prondict,wordHMMs)
-    # print('The CPU usage is: ', psutil.cpu_percent(4))
+    print()
 
-    _retrain(wordHMMs, data)
+    _viterbi(prondict,wordHMMs)
+    print('The CPU usage is: ', psutil.cpu_percent(4))
+
+    # _retrain(wordHMMs, data)
 
     # print(np.load('lab2_data.npz', allow_pickle=True)['data'])
