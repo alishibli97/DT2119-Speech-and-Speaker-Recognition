@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from pysndfile import sndio
+# from pysndfile import sndio
 
 def path2info(path):
     """
@@ -57,5 +57,3 @@ def frames2trans(sequence, outfilename=None, timestep=0.01):
         with open(outfilename, 'w') as f:
             f.write(trans)
     return trans
-
-        
