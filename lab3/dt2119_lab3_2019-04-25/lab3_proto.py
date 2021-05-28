@@ -1,5 +1,6 @@
 import numpy as np
 from lab3_tools import *
+from helper_functions import *
 
 
 def words2phones(wordList, pronDict, addSilence=True, addShortPause=True):
@@ -26,7 +27,8 @@ def words2phones(wordList, pronDict, addSilence=True, addShortPause=True):
 
 
 def forcedAlignment(lmfcc, phoneHMMs, phoneTrans):
-    """ forcedAlignmen: aligns a phonetic transcription at the state level
+
+   """ forcedAlignmen: aligns a phonetic transcription at the state level
 
     Args:
        lmfcc: NxD array of MFCC feature vectors (N vectors of dimension D)
@@ -39,6 +41,17 @@ def forcedAlignment(lmfcc, phoneHMMs, phoneTrans):
        list of strings in the form phoneme_index specifying, for each time step
        the state from phoneHMMs corresponding to the viterbi path.
     """
+
+   X = lmfcc
+   means = phoneHMMs['means']
+   covars = phoneHMMs['covars']
+   log_likelihood = log_multivariate_normal_density_diag(X,means,covars)
+
+   log_startprob = np.log(phoneHMMs['startprob'][:-1])
+   log_transmat = np.log(phoneHMMs['transmat'][:-1,:-1])
+
+   prob,viterbiStateTrans = viterbi(log_likelihood,log_startprob,log_transmat)
+   return viterbiStateTrans
     
 
 def hmmLoop(hmmmodels, namelist=None):

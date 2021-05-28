@@ -48,20 +48,22 @@ stateTrans = open("stateTrans.txt", "r").readlines()
 stateTrans = [state.strip() for state in stateTrans]
 # print(stateTrans[10])
 
-X = example_data['lmfcc']
-means = utteranceHMM['means']
-covars = utteranceHMM['covars']
-log_likelihood = log_multivariate_normal_density_diag(X,means,covars)
+# X = example_data['lmfcc']
+# means = utteranceHMM['means']
+# covars = utteranceHMM['covars']
+# log_likelihood = log_multivariate_normal_density_diag(X,means,covars)
 
-log_startprob = np.log(utteranceHMM['startprob'][:-1])
-log_transmat = np.log(utteranceHMM['transmat'][:-1,:-1])
+# log_startprob = np.log(utteranceHMM['startprob'][:-1])
+# log_transmat = np.log(utteranceHMM['transmat'][:-1,:-1])
 
-prob,viterbiStateTrans = viterbi(log_likelihood,log_startprob,log_transmat)
-# print(viterbiStateTrans)
+# prob,viterbiStateTrans = viterbi(log_likelihood,log_startprob,log_transmat)
+# # print(viterbiStateTrans)
 
-vpath = [stateTrans[i] for i in viterbiStateTrans]
+# vpath = [stateTrans[i] for i in viterbiStateTrans]
 # print(vpath)
-
+viterbiStateTrans = forcedAlignment(example_data['lmfcc'], utteranceHMM, phoneTrans)
+vpath = [stateTrans[i] for i in viterbiStateTrans]
+print(vpath)
 frames = frames2trans(vpath, outfilename='z43a.lab')
 print(frames)
 
@@ -69,9 +71,13 @@ traindata = []
 for root, dirs, files in os.walk('tidigits/disc_4.1.1/tidigits/train'):
     for file in files:
         if file.endswith('.wav'):
+            # ...your code for feature extraction and forced alignment
             filename = os.path.join(root, file)
             samples, samplingrate = loadAudio(filename)
-            
-            # ...your code for feature extraction and forced alignment
-            
+            lmfcc, mspec = mfcc(samples)
+            wordTrans = list(path2info(filename))
+            phoneTrans = word2phones(wordTrans, prondict)
+            targets = forcedAlignment(lmfcc, phoneHMMs, phoneTrans)                        
             traindata.append({'filename': filename, 'lmfcc': lmfcc, 'mspec': 'mspec', 'targets': targets})
+
+print(traindata)
