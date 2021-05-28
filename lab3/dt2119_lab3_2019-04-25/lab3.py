@@ -3,6 +3,7 @@ from lab3_proto import *
 from helper_functions import *
 from lab1_tools import *
 from prondict import prondict
+import os
 
 phoneHMMs = np.load('lab2_models_all.npz',allow_pickle=True)['phoneHMMs'].item()
 phones = sorted(phoneHMMs.keys())
@@ -47,10 +48,30 @@ stateTrans = open("stateTrans.txt", "r").readlines()
 stateTrans = [state.strip() for state in stateTrans]
 # print(stateTrans[10])
 
-print(example_data.keys())
-# utteranceHMM
+X = example_data['lmfcc']
+means = utteranceHMM['means']
+covars = utteranceHMM['covars']
+log_likelihood = log_multivariate_normal_density_diag(X,means,covars)
 
-# log_multivariate_normal_density_diag()
-# viterbi
+log_startprob = np.log(utteranceHMM['startprob'][:-1])
+log_transmat = np.log(utteranceHMM['transmat'][:-1,:-1])
 
-# frames2trans(viterbiStateTrans, outfilename='z43a.lab')
+prob,viterbiStateTrans = viterbi(log_likelihood,log_startprob,log_transmat)
+# print(viterbiStateTrans)
+
+vpath = [stateTrans[i] for i in viterbiStateTrans]
+# print(vpath)
+
+frames = frames2trans(vpath, outfilename='z43a.lab')
+print(frames)
+
+traindata = []
+for root, dirs, files in os.walk('tidigits/disc_4.1.1/tidigits/train'):
+    for file in files:
+        if file.endswith('.wav'):
+            filename = os.path.join(root, file)
+            samples, samplingrate = loadAudio(filename)
+            
+            # ...your code for feature extraction and forced alignment
+            
+            traindata.append({'filename': filename, 'lmfcc': lmfcc, 'mspec': 'mspec', 'targets': targets})
