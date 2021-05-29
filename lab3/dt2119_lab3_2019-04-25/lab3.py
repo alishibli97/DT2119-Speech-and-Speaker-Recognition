@@ -2,7 +2,6 @@ import numpy as np
 from lab3_proto import *
 from helper_functions import *
 from lab1_tools import *
-from prondict import prondict
 import os
 
 PATH = '/Users/nandakishorprabhu/Documents/Studies/DT2119/Code'
@@ -78,7 +77,7 @@ for idx, file_name in enumerate(filenames):
                 if file.endswith('.wav'):
                     filename = os.path.join(root, file)
                     samples, samplingrate = loadAudio(filename)
-                    lmfcc, mspec = lab1_proto.mfcc(samples)
+                    lmfcc, mspec = mfcc(samples)
                     wordTrans = list(path2info(filename)[2])
                     phoneTrans = words2phones(wordTrans, prondict.prondict)
                     targets = forcedAlignment(lmfcc, phoneHMMs, phoneTrans)
