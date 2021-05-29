@@ -1,6 +1,6 @@
 import numpy as np
 import os
-# from pysndfile import sndio
+import librosa as lb
 
 def path2info(path):
     """
@@ -26,7 +26,7 @@ def loadAudio(filename):
     the option dtype=np.int16 which keeps both the original data type and range
     of values.
     """
-    sndobj = sndio.read(filename, dtype=np.int16)
+    sndobj = lb.load(filename, dtype=np.int16)
     samplingrate = sndobj[1]
     samples = np.array(sndobj[0])
     return samples, samplingrate
