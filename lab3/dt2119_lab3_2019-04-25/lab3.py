@@ -80,11 +80,9 @@ for idx, file_name in enumerate(filenames):
                     lmfcc, mspec = mfcc(samples)
                     wordTrans = list(path2info(filename)[2])
                     phoneTrans = words2phones(wordTrans, prondict.prondict)
-                    targets = forcedAlignment(lmfcc, phoneHMMs, phoneTrans)
+                    targets = forcedAlignment(lmfcc, utteranceHMM, phoneTrans)
                     data.append({'filename': filename, 'lmfcc': lmfcc, 'mspec': mspec, 'targets': targets})
             if file_name == 'traindata.npz':
                 np.savez(PATH + file_name, traindata=data)
             elif file_name == 'testdata.npz':
                 np.savez(PATH + file_name, testdata=data)
-
-print(data)
