@@ -86,3 +86,5 @@ for idx, file_name in enumerate(filenames):
                 np.savez(PATH + file_name, traindata=data)
             elif file_name == 'testdata.npz':
                 np.savez(PATH + file_name, testdata=data)
+
+print("!TEST!")
