@@ -52,7 +52,7 @@ def forcedAlignment(lmfcc, phoneHMMs, phoneTrans):
 
    prob,viterbiStateTrans = viterbi(log_likelihood,log_startprob,log_transmat)
    return viterbiStateTrans
-    
+
 
 def hmmLoop(hmmmodels, namelist=None):
     """ Combines HMM models in a loop
